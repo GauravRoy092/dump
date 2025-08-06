@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .blog-card {
+            transition: all 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .search-highlight {
+            background-color: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">My Blog</h1>
+                    <p class="text-gray-600 mt-1">Thoughts, stories, and ideas</p>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Home</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">About</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Search and Filter Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative flex-1 max-w-md">
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        placeholder="Search articles..." 
+                        class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    >
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterPosts('all')" class="filter-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">All</button>
+                    <button onclick="filterPosts('tech')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Tech</button>
+                    <button onclick="filterPosts('lifestyle')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Lifestyle</button>
+                    <button onclick="filterPosts('travel')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Travel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Post -->
+        <div class="mb-12">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <span class="inline-block px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm font-medium mb-4">Featured</span>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">The Future of Web Development</h2>
+                    <p class="text-lg opacity-90 mb-6 max-w-2xl">Exploring the latest trends and technologies that are shaping the future of web development, from AI integration to new frameworks.</p>
+                    <button onclick="openPost('featured')" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">Read More</button>
+                </div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white bg-opacity-10 rounded-full -mr-32 -mt-32"></div>
+            </div>
+        </div>
+
+        <!-- Blog Posts Grid -->
+        <div id="blogGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Posts will be dynamically inserted here -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12">
+            <button onclick="loadMorePosts()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Load More Posts</button>
+        </div>
+    </main>
+
+    <!-- Modal for Reading Posts -->
+    <div id="postModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 id="modalTitle" class="text-3xl font-bold text-gray-900 mb-2"></h2>
+                        <div class="flex items-center text-gray-600">
+                            <span id="modalDate"></span>
+                            <span class="mx-2">•</span>
+                            <span id="modalCategory" class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"></span>
+                        </div>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+                <div id="modalContent" class="prose prose-lg max-w-none text-gray-700 leading-relaxed"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-6xl mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">My Blog</h3>
+                    <p class="text-gray-400">Sharing thoughts, experiences, and insights about technology, lifestyle, and everything in between.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Categories</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Technology</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Lifestyle</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Travel</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Personal</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Twitter</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">LinkedIn</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Email</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 My Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample blog posts data
+        const blogPosts = [
+            {
+                id: 1,
+                title: "Getting Started with JavaScript ES6",
+                excerpt: "Learn the essential features of ES6 that every developer should know, including arrow functions, destructuring, and modules.",
+                category: "tech",
+                date: "March 15, 2024",
+                readTime: "5 min read",
+                content: `
+                    <p>JavaScript ES6 (ECMAScript 2015) introduced many powerful features that have revolutionized how we write JavaScript. In this comprehensive guide, we'll explore the most important features you need to know.</p>
+                    
+                    <h3>Arrow Functions</h3>
+                    <p>Arrow functions provide a more concise way to write functions and automatically bind the 'this' context. They're perfect for callbacks and functional programming patterns.</p>
+                    
+                    <h3>Destructuring</h3>
+                    <p>Destructuring allows you to extract values from arrays and objects in a clean, readable way. This feature significantly reduces the amount of code needed for common operations.</p>
+                    
+                    <h3>Template Literals</h3>
+                    <p>Template literals make string interpolation much easier and more readable. You can embed expressions directly in strings using the \${} syntax.</p>
+                    
+                    <p>These features, along with many others, make modern JavaScript more powerful and enjoyable to work with. Start incorporating them into your projects today!</p>
+                `
+            },
+            {
+                id: 2,
+                title: "The Art of Minimalist Living",
+                excerpt: "Discover how embracing minimalism can lead to a more fulfilling and stress-free lifestyle.",
+                category: "lifestyle",
+                date: "March 12, 2024",
+                readTime: "7 min read",
+                content: `
+                    <p>Minimalism isn't just about having fewer possessions—it's about making room for what truly matters in your life. This philosophy can transform not just your living space, but your entire approach to life.</p>
+                    
+                    <h3>Starting Your Minimalist Journey</h3>
+                    <p>Begin by identifying what adds value to your life and what simply takes up space. This process of evaluation helps you understand your true priorities and values.</p>
+                    
+                    <h3>Benefits of Minimalist Living</h3>
+                    <p>Living with less can lead to reduced stress, increased focus, better financial health, and more time for experiences that matter. Many people find that minimalism helps them appreciate what they have more deeply.</p>
+                    
+                    <h3>Practical Tips</h3>
+                    <p>Start small with one room or even one drawer. The key is consistency and patience with yourself as you develop new habits and ways of thinking about your possessions.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Hidden Gems of Southeast Asia",
+                excerpt: "Explore breathtaking destinations off the beaten path in Southeast Asia that offer authentic cultural experiences.",
+                category: "travel",
+                date: "March 10, 2024",
+                readTime: "8 min read",
+                content: `
+                    <p>Southeast Asia is full of incredible destinations that go far beyond the typical tourist hotspots. These hidden gems offer authentic experiences and breathtaking beauty without the crowds.</p>
+                    
+                    <h3>Luang Prabang, Laos</h3>
+                    <p>This UNESCO World Heritage city offers a perfect blend of French colonial architecture and traditional Lao culture. The morning alms ceremony and stunning waterfalls nearby make it truly special.</p>
+                    
+                    <h3>Hoi An, Vietnam</h3>
+                    <p>While becoming more popular, Hoi An still retains its charm with ancient architecture, incredible street food, and skilled artisans. The lantern festival is particularly magical.</p>
+                    
+                    <h3>Raja Ampat, Indonesia</h3>
+                    <p>For diving enthusiasts, Raja Ampat offers some of the world's most biodiverse marine life. The remote location means pristine reefs and unforgettable underwater experiences.</p>
+                `
+            },
+            {
+                id: 4,
+                title: "Building Responsive Web Designs",
+                excerpt: "Master the principles of responsive design to create websites that work beautifully on all devices.",
+                category: "tech",
+                date: "March 8, 2024",
+                readTime: "6 min read",
+                content: `
+                    <p>Responsive web design is no longer optional—it's essential. With users accessing websites from countless device types and screen sizes, your designs must adapt seamlessly.</p>
+                    
+                    <h3>Mobile-First Approach</h3>
+                    <p>Starting your design process with mobile devices ensures that your core content and functionality work well on smaller screens, then progressively enhance for larger displays.</p>
+                    
+                    <h3>Flexible Grid Systems</h3>
+                    <p>CSS Grid and Flexbox provide powerful tools for creating layouts that adapt to different screen sizes. Understanding when to use each is key to effective responsive design.</p>
+                    
+                    <h3>Performance Considerations</h3>
+                    <p>Responsive design isn't just about layout—it's also about performance. Optimize images, use appropriate font sizes, and consider touch interactions for the best user experience.</p>
+                `
+            },
+            {
+                id: 5,
+                title: "Morning Routines That Transform Your Day",
+                excerpt: "Discover powerful morning habits that successful people use to start their days with purpose and energy.",
+                category: "lifestyle",
+                date: "March 5, 2024",
+                readTime: "5 min read",
+                content: `
+                    <p>How you start your morning sets the tone for your entire day. A well-crafted morning routine can boost your productivity, improve your mood, and help you achieve your goals more effectively.</p>
+                    
+                    <h3>The Power of Consistency</h3>
+                    <p>The most effective morning routines are consistent and sustainable. It's better to have a simple routine you can stick to than an elaborate one you abandon after a week.</p>
+                    
+                    <h3>Key Elements to Consider</h3>
+                    <p>Successful morning routines often include elements like hydration, movement, mindfulness, and planning. Find the combination that works best for your lifestyle and goals.</p>
+                    
+                    <h3>Making It Stick</h3>
+                    <p>Start small and gradually build your routine. Track your progress and be patient with yourself as you develop these new habits. Remember, it takes time to see the full benefits.</p>
+                `
+            },
+            {
+                id: 6,
+                title: "Photography Tips for Travelers",
+                excerpt: "Capture stunning travel memories with these essential photography techniques and composition tips.",
+                category: "travel",
+                date: "March 3, 2024",
+                readTime: "7 min read",
+                content: `
+                    <p>Great travel photography is about more than just having expensive equipment—it's about seeing the world with a creative eye and understanding how to capture the essence of a place.</p>
+                    
+                    <h3>Understanding Light</h3>
+                    <p>The golden hours just after sunrise and before sunset provide the most flattering light for photography. Learn to work with natural light to create mood and atmosphere in your images.</p>
+                    
+                    <h3>Composition Techniques</h3>
+                    <p>The rule of thirds, leading lines, and framing are fundamental composition techniques that can dramatically improve your photos. Practice these until they become second nature.</p>
+                    
+                    <h3>Telling Stories</h3>
+                    <p>The best travel photos tell stories about the places you visit and the people you meet. Look for moments that capture the culture, emotions, and unique character of your destinations.</p>
+                `
+            }
+        ];
+
+        let currentPosts = [...blogPosts];
+        let displayedPosts = 3;
+        let currentFilter = 'all';
+
+        // Initialize the blog
+        function initBlog() {
+            displayPosts();
+            setupSearch();
+        }
+
+        // Display posts in the grid
+        function displayPosts() {
+            const grid = document.getElementById('blogGrid');
+            const postsToShow = currentPosts.slice(0, displayedPosts);
+            
+            grid.innerHTML = postsToShow.map(post => `
+                <article class="blog-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fade-in" data-category="${post.category}">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium capitalize">${post.category}</span>
+                            <span class="text-gray-500 text-sm">${post.readTime}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">${post.title}</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">${post.excerpt}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500 text-sm">${post.date}</span>
+                            <button onclick="openPost(${post.id})" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Read More →</button>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // Filter posts by category
+        function filterPosts(category) {
+            currentFilter = category;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('bg-blue-600', 'text-white');
+            
+            // Filter posts
+            if (category === 'all') {
+                currentPosts = [...blogPosts];
+            } else {
+                currentPosts = blogPosts.filter(post => post.category === category);
+            }
+            
+            displayedPosts = 3;
+            displayPosts();
+        }
+
+        // Setup search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (searchTerm === '') {
+                    currentPosts = currentFilter === 'all' ? [...blogPosts] : blogPosts.filter(post => post.category === currentFilter);
+                } else {
+                    const filteredByCategory = currentFilter === 'all' ? blogPosts : blogPosts.filter(post => post.category === currentFilter);
+                    currentPosts = filteredByCategory.filter(post => 
+                        post.title.toLowerCase().includes(searchTerm) || 
+                        post.excerpt.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                displayedPosts = Math.min(currentPosts.length, 3);
+                displayPosts();
+            });
+        }
+
+        // Load more posts
+        function loadMorePosts() {
+            displayedPosts = Math.min(displayedPosts + 3, currentPosts.length);
+            displayPosts();
+        }
+
+        // Open post in modal
+        function openPost(postId) {
+            let post;
+            
+            if (postId === 'featured') {
+                post = {
+                    title: "The Future of Web Development",
+                    date: "March 18, 2024",
+                    category: "tech",
+                    content: `
+                        <p>The web development landscape is evolving at an unprecedented pace. From artificial intelligence integration to new frameworks and tools, developers today have more opportunities than ever to create amazing digital experiences.</p>
+                        
+                        <h3>AI-Powered Development</h3>
+                        <p>Artificial intelligence is revolutionizing how we write code, debug applications, and optimize performance. Tools like GitHub Copilot and ChatGPT are becoming essential parts of the developer toolkit.</p>
+                        
+                        <h3>The Rise of Edge Computing</h3>
+                        <p>Edge computing is bringing processing power closer to users, resulting in faster load times and better user experiences. This shift is changing how we think about application architecture.</p>
+                        
+                        <h3>WebAssembly and Performance</h3>
+                        <p>WebAssembly is enabling near-native performance in web applications, opening up new possibilities for complex applications that were previously only possible as desktop software.</p>
+                        
+                        <h3>The Future is Bright</h3>
+                        <p>As we look ahead, the future of web development is filled with exciting possibilities. The key is to stay curious, keep learning, and embrace the changes that will shape our industry.</p>
+                    `
+                };
+            } else {
+                post = blogPosts.find(p => p.id === postId);
+            }
+            
+            if (post) {
+                document.getElementById('modalTitle').textContent = post.title;
+                document.getElementById('modalDate').textContent = post.date;
+                document.getElementById('modalCategory').textContent = post.category;
+                document.getElementById('modalContent').innerHTML = post.content;
+                document.getElementById('postModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('postModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('postModal').addEventListener('click', (e) => {
+            if (e.target.id === 'postModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize the blog when page loads
+        document.addEventListener('DOMContentLoaded', initBlog);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a7f7b92037f648',t:'MTc1NDQxNDQ1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
